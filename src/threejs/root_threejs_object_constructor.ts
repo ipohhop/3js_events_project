@@ -1,16 +1,21 @@
 // outer
 import * as THREE from 'three'
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls"
 import React from 'react'
-import { TransformControls } from "three/examples/jsm/controls/TransformControls";
-import { DragControls } from "three/examples/jsm/controls/DragControls";
-import {Color, PerspectiveCamera} from "three";
-import {Camera, Elements, EventItem, Grid, Light, SceneSettings} from "./threejsTypes";
-import { creatScene } from "./scene&camera";
-import gsap from 'gsap';
+import {TransformControls} from "three/examples/jsm/controls/TransformControls";
+import {DragControls} from "three/examples/jsm/controls/DragControls";
+import {Object3D, PerspectiveCamera} from "three";
 
 
 // local
+import {creatScene} from "./scene&camera";
+import {
+  Camera,
+  Elements,
+  Grid,
+  Light,
+  SceneSettings
+} from "./threejsTypes";
 
 
 
@@ -28,6 +33,7 @@ export class BaseCreator {
   render: () => void;
 
   private clock: THREE.Clock;
+  private readonly tick: () => void;
   startAnimation: () => void;
   orbitControl: OrbitControls[];
 
@@ -36,6 +42,8 @@ export class BaseCreator {
   stopWindowResize: () => void;
   setWidthHeight: (width: (number | undefined), height: (number | undefined)) => void;
   setControlStatus: (status: string) => void;
+  clone: () => any;
+  saveCanvasPng: () => void;
   addDragControls: (element: THREE.Group) => void;
 
 
@@ -47,6 +55,7 @@ export class BaseCreator {
   updatable: Set<any>;
   dragControls: DragControls []
   capture: boolean;
+  snapshot: () => void;
 
 
   constructor(camera: Camera, width: number, height: number) {
@@ -71,6 +80,43 @@ export class BaseCreator {
       preserveDrawingBuffer: true // for save canvas in png
     })
 
+    this.snapshot = () => {
+
+      // function clone(object: any) {
+      //   return _.cloneDeep(object)
+      // }
+      //
+      //
+      // class Memonto {
+      //   camera: Object3D;
+      //   scene: Object3D;
+      //   width: number;
+      //   height: number;
+      //   dragControls: DragControls []
+      //   orbitControl: OrbitControls[]
+      //   controlStatus: string;
+      //   elements: Elements;
+      //
+      //
+      //   constructor(object: BaseCreator) {
+      //     this.camera = object.camera.clone(true)
+      //     this.scene = object.scene.clone(true)
+      //     this.width = clone(object.width)
+      //     this.height = clone(object.height)
+      //     this.dragControls = object.dragControls.map(item => clone(item))
+      //     this.orbitControl = object.orbitControl.map(item => clone(item))
+      //     this.controlStatus = object.controlStatus
+      //     this.elements = clone(object.elements)
+      //   }
+      // }
+      //
+      // const snapShot = new Memonto(this)
+      //
+      // this.careTaker.saveSnapshot(snapShot)
+    }
+
+
+
     this.setControlStatus = (status: string) => {
       if (status === "orbit") {
         this.controlStatus = status
@@ -94,6 +140,34 @@ export class BaseCreator {
         })
       }
     }
+
+    this.clone = () => {
+
+
+      // this.scene.clone()
+
+      // let method1 = Object.assign({}, this);
+      // let method2 = JSON.parse(JSON.stringify(this));
+      //
+      //
+      // return Object.assign({}, method1, method2)
+
+      // let object = {}
+      //
+      // for (const x in this) {
+      //     let copy = _.clone(this[x])
+      //     // @ts-ignore
+      //     object[x] = copy
+      // }
+      // const copy = _.cloneDeep(this)
+      // console.log("creat copy object:", copy)
+      // console.log("original object:", this)
+      //
+      // return copy
+
+      // return Object.assign(Object.create(Object.getPrototypeOf(this)), this)
+    }
+
 
     this.init = (container: React.MutableRefObject<any>, orbitControl: boolean = true) => {
       // enter size render window
@@ -130,6 +204,8 @@ export class BaseCreator {
     this.startAnimation = () => {
       (this.renderer as THREE.WebGLRenderer).render(this.scene, this.camera as THREE.PerspectiveCamera);
 
+      this.tick()
+
       window.requestAnimationFrame(this.startAnimation);
     };
 
@@ -150,6 +226,24 @@ export class BaseCreator {
 
     }
 
+    this.saveCanvasPng = (name?: string) => {
+
+      const dataURL = (this.canvas as HTMLCanvasElement).toDataURL("image/png", 1.0);
+      window.location.href = dataURL
+      const fileName = name ? name + ".png" : 'my-canvas.png'
+
+
+      downloadImage(dataURL, fileName)
+
+      // Save | Download image
+      function downloadImage(data: string, filename: string) {
+        let a = document.createElement('a');
+        a.href = data;
+        a.download = filename;
+        // document.body.appendChild(a);
+        a.click();
+      }
+    }
     this.addDragControls = (element: THREE.Group) => {
 
       let controls = new DragControls(
@@ -165,6 +259,24 @@ export class BaseCreator {
       console.log(this)
     }
 
+    this.tick = () => {
+      // only call the getDelta function once per frame!
+      const delta = this.clock.getDelta();
+
+      // console.log(
+      //     `The last frame rendered in ${delta * 1000} milliseconds`,
+      // );
+
+      // for (const object of Array.from(this.updatable.values())) {
+      //     object.tick(delta);
+      // }
+
+      // @ts-ignore
+      for (const object of this.updatable) {
+        object.tick(delta);
+      }
+
+    }
   }
 }
 
@@ -195,7 +307,7 @@ export class Creator extends BaseCreator {
     this.addElement = (element: THREE.Mesh | THREE.Mesh[] | THREE.Group, nameElement: string, drag: boolean = false,
                        inGroup: boolean = false, x: number = 0, y: number = 0, z: number = 0) => {
 
-      // сообщение о перезаписи элемента
+      // сообщение оперезаписи элемента
       if (nameElement in this.elements.groups || nameElement in this.elements.elements) console.log(`вы перезаписали элемент ${nameElement}`)
 
       //если element это group добавляем группу по name в объект elements.group[name] далее добавляем в сцену
@@ -203,6 +315,8 @@ export class Creator extends BaseCreator {
         this.elements.groups[nameElement] = element
         this.scene.add(element)
         if (drag) this.addDragControls(element)
+
+        this.snapshot()
 
         return
       }
@@ -216,6 +330,8 @@ export class Creator extends BaseCreator {
         this.elements.groups[nameElement] = (group as THREE.Group)
         this.scene.add(this.elements.groups[nameElement])
 
+        this.snapshot()
+
         return
       }
 
@@ -225,11 +341,15 @@ export class Creator extends BaseCreator {
           this.elements.elements[nameElement + (index + 1)] = item
           this.scene.add(item)
 
+          this.snapshot()
+
         })
       } else {
         element.position.set(x, y, z)
         this.elements.elements[nameElement] = element
         this.scene.add(element)
+
+        this.snapshot()
 
       }
     }
@@ -250,7 +370,7 @@ export class Creator extends BaseCreator {
 
     // method for setting parameters scene
     this.settingScene = (objectSettings: SceneSettings) => {
-      if (objectSettings.background) this.scene.background = objectSettings.background as Color
+      if (objectSettings.background) this.scene.background = objectSettings.background
       if (objectSettings.fog) this.scene.fog = objectSettings.fog
       if (objectSettings.overrideMaterial) this.scene.overrideMaterial = objectSettings.overrideMaterial
       if (objectSettings.autoUpdate) this.scene.autoUpdate = objectSettings.autoUpdate
@@ -266,107 +386,6 @@ export class Creator extends BaseCreator {
         if (!(position === undefined)) this.camera.position.set(...position)
         if (!(rotation === undefined)) this.camera.rotation.set(...rotation)
       }
-    }
-  }
-}
-
-export class EventCanvas extends Creator {
-
-  private gsapEvent: gsap.core.Tween | undefined;
-  private events: { [eventName: string]: EventItem }
-  private cameraPositions: {
-    onRoom(): { rotation: { x: number; y: number; z: number }; position: { x: number; y: number; z: number }; time: number }
-    active: string;
-    onMonitor(): { rotation: { x: number; y: number; z: number }; position: { x: number; y: number; z: number }; time: number }
-  };
-  private readonly getIntersects: (x: number, y: number, camera: Camera, object: (THREE.Group | THREE.Mesh), width: number, height: number) => THREE.Intersection[]
-
-  clickOnRobot: () => void
-  HTMLElements: { [name: string]: HTMLElement }
-  addHTMLElement: (name: string, element: HTMLElement) => void
-
-  constructor(camera: Camera, width: number, height: number) {
-    super(camera, width, height)
-    this.width = width
-    this.height = height
-    this.camera = camera
-    this.events = {}
-    this.HTMLElements = {
-      canvas: this.canvas as HTMLCanvasElement
-    }
-    this.cameraPositions = {
-      active: "room",
-      onRoom(time: number = 3) {
-        this.active = "room"
-        return {
-          position: {x: -1.4, y: 1.7, z: 1.5},
-          rotation: {x: 0, y: -0.5, z: 0},
-          time: time,
-          ease: "elastic"
-        }
-      },
-      onMonitor(time: number = 3) {
-        this.active = "monitor"
-        return {
-          position: {x: -0.5, y: 1.72, z: 0.33},
-          rotation: {x: -0.1, y: 0.0065, z: 0.005},
-          time: time
-        }
-      }
-    }
-
-    this.addHTMLElement = (name: string, element: HTMLElement) => {
-      this.HTMLElements[name] = element
-    }
-
-    //method for creat events
-
-    this.clickOnRobot = () => {
-
-      const onDocumentMouseClick = (event: any) => {
-        event.preventDefault();
-
-        let intersects = this.getIntersects(event.layerX, event.layerY, this.camera, this.elements.groups.robot as THREE.Group, this.width, this.height);
-
-        if (intersects.length > 0) {
-          // Create an AnimationMixer, and get the list of AnimationClip instances
-
-          const model = this.elements.groups.robot
-          const mixer = new THREE.AnimationMixer(model);
-
-          const clips = model.animations
-
-          // Play a specific animation (проигрываем конкретную анимацию)
-          const clip = clips[0]
-
-          const action = mixer.clipAction(clip);
-
-          action.play()
-
-          // @ts-ignore
-          model.tick = (delta: any) => mixer.update(delta)
-          this.updatable.add(model)
-        }
-      }
-      (this.canvas as HTMLCanvasElement).addEventListener("click", onDocumentMouseClick, false);
-    }
-
-    // function for creat raycaster object (объект пересечения с элементом)
-
-    this.getIntersects = (x: number, y: number, camera: Camera, object: THREE.Group | THREE.Mesh, width: number, height: number) => {
-
-      let raycaster = new THREE.Raycaster();
-      let mouseVector = new THREE.Vector2();
-
-      let Crx = (x / width) * 2 - 1;
-      let Cry = -((y) / height) * 2 + 1;
-
-      mouseVector.set(Crx, Cry);
-
-      raycaster.setFromCamera(mouseVector, camera as THREE.PerspectiveCamera | THREE.OrthographicCamera);
-
-      // object - объект проверяемый на пересечение с узлом
-      return raycaster.intersectObject(object, true);
     }
   }
 }

@@ -1,10 +1,9 @@
 //outer
-import React, { FunctionComponent, useEffect, useMemo, useRef, useState} from 'react';
-import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
-import {creatPerspectiveCamera} from "../../three_lib/scene&camera";
-import {EventCanvas} from "../../three_lib/root_constructor";
-import {lightThreePoints, planeCreator} from "../../three_lib/otherConstructors";
-import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader";
+import React, {FunctionComponent, useEffect, useMemo, useRef, useState} from 'react';
+import {creatPerspectiveCamera} from "../../threejs/scene&camera";
+import {EventBackgroundCanvas} from "../../threejs/backfroundCanvas";
+import {creatGrid, generationCubs, lightThreePoints} from "../../threejs/otherConstructors";
+
 
 //local
 
@@ -15,80 +14,43 @@ interface OwnProps {
 type Props = OwnProps
 
 const BackCanvas: FunctionComponent<Props> = (props) => {
-    const canvasContainer = useRef(null)
+  const canvasContainer = useRef(null)
 
-    const [width] = useState(window.innerWidth)
-    const [height] = useState(window.innerHeight)
+  const [width] = useState(window.innerWidth)
+  const [height] = useState(window.innerHeight)
 
-    //creat camera
-    const camera = useMemo(() => creatPerspectiveCamera(width, height, -1.4, 1.7, 1.5), [width, height])
+  // создаю нужную камеру
+  const camera = useMemo(() =>
+      creatPerspectiveCamera({width, height, position: {x: 11.4, y: 10.7, z: 4.5}}),
+    [width, height])
 
-    //creat canvas object
-    const canvas = useRef(new EventCanvas(camera, width, height))
+  // создает экземпляр объекта работы 3js
+  const canvas = useRef(new EventBackgroundCanvas(camera, width, height))
 
-    //initialization canvas in component and mount
-    useEffect(() => canvas.current.init(canvasContainer,false), [])
+  // инициирует создание canvas и запускает в работу с подпиской на animationFrame
+  useEffect(() => canvas.current.init(canvasContainer, true), [])
 
-    // add Lights
-    useEffect(() => canvas.current.addLights(lightThreePoints()), [])
+  // добавляет свет
+  useEffect(() => canvas.current.addLights(lightThreePoints()), [])
 
-    // add window resize effect
-    useEffect(() => {
-        canvas.current.startWindowResize()
-        return canvas.current.stopWindowResize
-    }, [])
+  // создает подписку на ресайз
+  useEffect(() => {
+    canvas.current.startWindowResize()
+    return canvas.current.stopWindowResize
+  }, [])
 
-    // add plane element for event on monitor
-    useEffect(() => {
-        let eventElement = (planeCreator(0.82, 0.54, 1, 1))
-        eventElement.name = "planeBack"
-        canvas.current.addElement(eventElement, "planeBack", false,false, -0.5, 1.68, 0)
-    }, [])
+  // добавляет сетку для наглядности пространства
+  useEffect(() => canvas.current.addGrid(creatGrid()), [])
 
-    // add background GLTF 3d object
-    useEffect(() => {
-        const loader = new GLTFLoader();
-        loader.load('models/back/scene.gltf', function (gltf) {
-            canvas.current.addElement(gltf.scene, "background")
-        }, undefined, function (error) {
-            console.error(error)
-        })
-    }, [])
+  // добавляем массив кубов
+  useEffect(() => canvas.current.addElement(generationCubs(4, 4), 'cub_cubs'), [])
 
-    // add robot GLTF 3d object
-    useEffect(() => {
-        const loader = new GLTFLoader();
-        // DRACOLoader for load animations
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath('../node_modules/three/examples/js/libs/draco');
-        loader.setDRACOLoader(dracoLoader);
-        loader.load('models/RobotExpressive.glb', function (gltf) {
-            const element = gltf.scene
-            element.receiveShadow = true
-            element.castShadow = true
-            element.scale.set(0.1, 0.1, 0.1)
-            element.position.set(-1.45, 1.3, 0)
-            element.rotateY(0.3)
-            element.name = "robot"
+  return (
+    <>
+      <div ref={canvasContainer} className="backCanvas__container"/>
+    </>
 
-            element.animations = gltf.animations
-
-            const face = element.getObjectByName( 'Head_4' )
-            element.getObjectByName( 'Head_4' )
-
-            // @ts-ignore
-            face.morphTargetInfluences=[1,0,0]
-
-            canvas.current.addElement(element, "robot")
-        })
-    }, [])
-
-
-    return (
-            <div ref={canvasContainer}
-                 className="backCanvas__container"
-                 style={{width: "500px", height: "500px", position: "fixed", zIndex: -1}}/>
-    );
+  );
 };
 
 export default BackCanvas;
