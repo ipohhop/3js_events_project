@@ -58,30 +58,6 @@ export class EventBackgroundCanvas extends Creator {
     this.addHTMLElement = (name: string, element: HTMLElement) => {
       this.HTMLElements[name] = element
     }
-    //method for creat events
-
-    // this.creatEventClick = (elementTarget: THREE.Group | THREE.Mesh, callback: EventCallBack, eventName: string, addEvent: boolean = true) => {
-    //     let eventObject: EventItem
-    //     eventObject = {
-    //         eventTargets: {},
-    //         addDOMElement: (element: THREE.Group | THREE.Mesh, eventTargets = eventObject.eventTargets, addEvent: boolean = true) => {
-    //             eventTargets[element.name] = element
-    //             if (addEvent) (<HTMLCanvasElement>this.canvas).addEventListener("click", eventObject.event, false);
-    //         },
-    //         _event: (event: any) => {
-    //             let intersects = getIntersects(event.layerX, event.layerY, this.camera, <THREE.Group>this.elements.elements.planeBack, this.width, this.height)
-    //             let object = ()=>{
-    //
-    //             }
-    //         },
-    //         addEvent: () => {
-    //
-    //         },
-    //         removeEvent: RemoveEvent
-    //     }
-    //
-    // }
-    //
 
     this.clickOnMonitor = (callbackProps: Dispatch<SetStateAction<any>>, htmlElement: HTMLElement) => {
       const onDocumentMouseClick = (event: any) => {
@@ -126,7 +102,6 @@ export class EventBackgroundCanvas extends Creator {
 
           const action = mixer.clipAction(clip);
           action.play()
-
 
 
           // @ts-ignore

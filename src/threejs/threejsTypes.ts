@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import {Creator} from "./root_threejs_object_constructor";
 import {FogBase} from "three/src/scenes/Fog";
 import {Material} from "three/src/materials/Material";
 import {Texture} from "three/src/textures/Texture";
@@ -118,4 +117,12 @@ export interface CameraCreatorArguments {
   near?: number,
   far?: number,
   fov?: number
+}
+
+
+export interface AddElementInScene {
+  element: THREE.Mesh | THREE.Mesh[] | THREE.Group,
+  nameElement: string,
+  inGroup?: boolean,
+  position?: [x: number, y: number, z: number ],
 }

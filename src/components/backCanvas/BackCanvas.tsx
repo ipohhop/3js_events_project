@@ -28,10 +28,14 @@ const BackCanvas: FunctionComponent<Props> = (props) => {
   const canvas = useRef(new EventBackgroundCanvas(camera, width, height))
 
   // инициирует создание canvas и запускает в работу с подпиской на animationFrame
-  useEffect(() => canvas.current.init(canvasContainer, true), [])
+  useEffect(() => {
+    canvas.current.init(canvasContainer, true)
+  }, [])
 
   // добавляет свет
-  useEffect(() => canvas.current.addLights(lightThreePoints()), [])
+  useEffect(() => {
+    canvas.current.addLights(lightThreePoints())
+  }, [])
 
   // создает подписку на ресайз
   useEffect(() => {
@@ -40,10 +44,17 @@ const BackCanvas: FunctionComponent<Props> = (props) => {
   }, [])
 
   // добавляет сетку для наглядности пространства
-  useEffect(() => canvas.current.addGrid(creatGrid()), [])
+  useEffect(() => {
+    canvas.current.addGrid(creatGrid())
+  }, [])
 
   // добавляем массив кубов
-  useEffect(() => canvas.current.addElement(generationCubs(4, 4), 'cub_cubs'), [])
+  useEffect(() => {
+    canvas.current.addElement({
+      element: generationCubs(4, 4),
+      nameElement: 'cub_cubs'
+    })
+  }, [])
 
   return (
     <>
