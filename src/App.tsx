@@ -1,12 +1,12 @@
 import React from 'react';
-import BackCanvas from "./components/backCanvas/BackCanvas";
+import Canvas from "./components/backCanvas/Canvas";
 
 
 function App() {
 
   return (
     <div className="App_container">
-      < BackCanvas />
+      < Canvas />
     </div>
   );
 }

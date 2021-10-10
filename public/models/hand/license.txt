@@ -1,0 +1,11 @@
+Model Information:
+* title:	XYZ_14F_daily_draft
+* source:	https://sketchfab.com/3d-models/xyz-14f-daily-draft-f9e8b9296d0441859963bd27ebef61f2
+* author:	P.Gorec (https://sketchfab.com/PavelGorec)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "XYZ_14F_daily_draft" (https://sketchfab.com/3d-models/xyz-14f-daily-draft-f9e8b9296d0441859963bd27ebef61f2) by P.Gorec (https://sketchfab.com/PavelGorec) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
